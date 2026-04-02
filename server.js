@@ -6,6 +6,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'API FROTALOG OK' });
 });
 
+// ================= CARGAS =================
 app.get('/cargas', (req, res) => {
   res.json([
     {
@@ -27,6 +28,8 @@ app.get('/cargas', (req, res) => {
     }
   ]);
 });
+
+// ================= ROMANEIO (JSON) =================
 app.get('/cargas/:numcar/romaneio', (req, res) => {
   const numcar = req.params.numcar;
 
@@ -63,9 +66,51 @@ app.get('/cargas/:numcar/romaneio', (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+// ================= ROMANEIO (HTML - VISUAL) =================
+app.get('/cargas/:numcar/romaneio-view', (req, res) => {
+  const numcar = req.params.numcar;
+
+  const entregas = [
+    { cliente: "DECIO COMERCIO", bairro: "ZONA RURAL", pallets: 12, itens: 30, peso: 91, creditos: 0 },
+    { cliente: "MINIMERCADO ORNELAS", bairro: "PARQUE SAO JORGE", pallets: 5, itens: 10, peso: 30, creditos: 2 }
+  ];
+
+  let html = `
+  <html>
+  <body style="font-family: Arial; background:#f5f5f5; padding:10px;">
+    
+    <div style="background:#3A209D; color:white; padding:15px; border-radius:10px;">
+      <h2 style="margin:0;">Carga ${numcar}</h2>
+      <small>Placa: HNL8J25 | Motorista: VILMAR</small>
+    </div>
+
+    <div style="margin-top:10px;">
+  `;
+
+  entregas.forEach(e => {
+    html += `
+      <div style="background:white; padding:12px; margin-bottom:10px; border-radius:10px;">
+        <b>${e.cliente}</b><br>
+        <small>${e.bairro}</small><br><br>
+
+        📦 ${e.itens} itens | ${e.pallets} pallets<br>
+        ⚖️ ${e.peso} kg<br>
+
+        ${e.creditos > 0 ? '<span style="color:red; font-weight:bold;">⚠ Crédito pendente</span>' : ''}
+      </div>
+    `;
+  });
+
+  html += `
+    </div>
+  </body>
+  </html>
+  `;
+
+  res.send(html);
 });
+
+// ================= ENTREGAS =================
 app.get('/entregas', (req, res) => {
   res.json([
     {
@@ -84,6 +129,8 @@ app.get('/entregas', (req, res) => {
     }
   ]);
 });
+
+// ================= TRANSBORDOS =================
 app.get('/transbordos', (req, res) => {
   res.json([
     {
@@ -105,4 +152,9 @@ app.get('/transbordos', (req, res) => {
       julieta_2: "GHI-9999"
     }
   ]);
+});
+
+// ================= SERVIDOR =================
+app.listen(3000, () => {
+  console.log('Servidor rodando na porta 3000');
 });
