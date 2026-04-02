@@ -101,12 +101,12 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         text-align:center;
       }
 
-   */.text-left {
+   .text-left {
   text-align: left;
-}/*
+}
 
 .text-center {
-  text-align: center;
+  text-align: left;
 }
 
       .red {
@@ -136,7 +136,7 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
           <div class="sub">Ajud: ${ajudante1} / ${ajudante2}</div>
         </div>
 
-        <img class="logo" src="https://img.cdndsgni.com/preview/11825355.jpg">
+        <img class="logo" src="https://www.truckvan.com.br/uploads/img/servicos_sub/13/servicos_sub_fotos/ad1e54164d1dd705edd96861a8aeee5a.png">
       </div>
     </div>
 
