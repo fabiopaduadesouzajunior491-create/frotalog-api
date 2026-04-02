@@ -101,9 +101,9 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         text-align:center;
       }
 
-   .text-left {
+   */.text-left {
   text-align: left;
-}
+}/*
 
 .text-center {
   text-align: center;
@@ -136,7 +136,7 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
           <div class="sub">Ajud: ${ajudante1} / ${ajudante2}</div>
         </div>
 
-        <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/512px-React-icon.svg.png">
+        <img class="logo" src="https://img.cdndsgni.com/preview/11825355.jpg">
       </div>
     </div>
 
