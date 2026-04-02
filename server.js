@@ -101,9 +101,13 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         text-align:center;
       }
 
-      .dados {
-        text-align:right;
-      }
+   .text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
 
       .red {
         color:red;
@@ -156,12 +160,12 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
           <div class="cliente">${e.codcli} - ${e.cliente}</div>
         </div>
 
-        <div class="bairro">${e.bairro}</div>
+        <div class="bairro text-left">${e.bairro}</div>
 
-        <div class="dados">${e.pallets}</div>
-        <div class="dados">${e.itens}</div>
-        <div class="dados">${e.peso.toFixed(3)}</div>
-        <div class="dados">${e.volume.toFixed(3)}</div>
+<div class="text-center">${e.pallets}</div>
+<div class="text-center">${e.itens}</div>
+<div class="text-center">${e.peso.toFixed(3)}</div>
+<div class="text-center">${e.volume.toFixed(3)}</div>
 
       </div>
     `;
