@@ -35,89 +35,105 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
   const placa = "HNL8J25";
   const motorista = "VILMAR";
-  const ajudante1 = "WAGNER";
-  const ajudante2 = "RENE";
+  const ajudante1 = "307-WAGNERTAVARES";
+  const ajudante2 = "425-RENESRAMON";
 
   const entregas = [
-    { seq: 1, cliente: "DECIO COMERCIO", bairro: "ZONA RURAL", pallets: 12, itens: 30, peso: 91, creditos: 0 },
-    { seq: 2, cliente: "MINIMERCADO ORNELAS", bairro: "PARQUE SAO JORGE", pallets: 5, itens: 10, peso: 30, creditos: 2 }
+    { seq: 12, cliente: "DECIO COMERCIO", codcli: 10500, bairro: "ZONA RURAL", pallets: 12, itens: 30, peso: 91.090, volume: 0.122, creditos: 0 },
+    { seq: 11, cliente: "MINIMERCADO ORNELAS", codcli: 10198, bairro: "PARQUE SAO JORGE", pallets: 12, itens: 2, peso: 5.200, volume: 0.123, creditos: 2 }
   ];
+
+  let totalItens = 0;
+  let totalPeso = 0;
+  let totalVolume = 0;
+
+  entregas.forEach(e => {
+    totalItens += e.itens;
+    totalPeso += e.peso;
+    totalVolume += e.volume;
+  });
 
   let html = `
   <html>
   <head>
     <style>
-      body {
-        font-family: Arial;
-        font-size: 12px;
-        margin: 10px;
-      }
-      .header {
-        border-bottom: 2px solid black;
-        margin-bottom: 10px;
-        padding-bottom: 5px;
-      }
-      .title {
-        text-align: center;
-        font-weight: bold;
-        font-size: 16px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      th, td {
-        border: 1px solid black;
-        padding: 4px;
-        text-align: left;
-      }
-      th {
-        background: #eee;
-      }
-      .red {
-        color: red;
-        font-weight: bold;
-      }
+      body { font-family: Arial; font-size: 12px; }
+      .topo { display:flex; justify-content:space-between; align-items:center; }
+      .titulo { font-size:16px; font-weight:bold; text-align:center; margin:10px 0; }
+      table { width:100%; border-collapse: collapse; }
+      th, td { border-bottom:1px solid black; padding:4px; }
+      th { text-align:left; }
+      .red { color:red; font-weight:bold; }
+      .linha-topo { margin-top:10px; }
     </style>
   </head>
 
   <body>
 
-    <div class="header">
-      <div class="title">ROMANEIO DE ENTREGA</div>
-      <br>
-      <b>Carga:</b> ${numcar} &nbsp;&nbsp;
-      <b>Placa:</b> ${placa} <br>
-      <b>Motorista:</b> ${motorista} <br>
-      <b>Ajudantes:</b> ${ajudante1} / ${ajudante2}
+    <div class="topo">
+      <div>
+        <b>02/04/2026</b><br>
+        <b>Placa:</b> ${placa}<br>
+        <b>Carga:</b> ${numcar}
+      </div>
+
+      <div class="titulo">
+        Roteiro de Entregas do Carregamento
+      </div>
+
+      <div>
+        <img src="https://cdn-icons-png.flaticon.com/512/1995/1995501.png" width="80"><br>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Iconic_image_of_company_logo_placeholder.png/240px-Iconic_image_of_company_logo_placeholder.png" width="80">
+      </div>
     </div>
+
+    <hr>
+
+    <div>
+      <b>MOTORISTA:</b> ${motorista} &nbsp;&nbsp;&nbsp;
+      <b>AJUDANTE 1:</b> ${ajudante1} &nbsp;&nbsp;&nbsp;
+      <b>AJUDANTE 2:</b> ${ajudante2}
+    </div>
+
+    <br>
 
     <table>
       <tr>
-        <th>Seq</th>
         <th>Cliente</th>
+        <th>Cód</th>
         <th>Bairro</th>
         <th>Pallet</th>
         <th>Itens</th>
         <th>Peso</th>
+        <th>Vol</th>
       </tr>
   `;
 
   entregas.forEach(e => {
     html += `
       <tr class="${e.creditos > 0 ? 'red' : ''}">
-        <td>${e.seq}</td>
         <td>${e.cliente}</td>
+        <td>${e.codcli}</td>
         <td>${e.bairro}</td>
         <td>${e.pallets}</td>
         <td>${e.itens}</td>
-        <td>${e.peso}</td>
+        <td>${e.peso.toFixed(3)}</td>
+        <td>${e.volume.toFixed(3)}</td>
       </tr>
     `;
   });
 
   html += `
     </table>
+
+    <br>
+
+    <div>
+      <b>Total Geral:</b> 
+      ${totalItens} itens | 
+      ${totalPeso.toFixed(3)} kg | 
+      ${totalVolume.toFixed(3)} m³
+    </div>
 
   </body>
   </html>
