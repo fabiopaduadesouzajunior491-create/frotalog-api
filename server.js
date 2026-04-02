@@ -39,8 +39,8 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   const ajudante2 = "425-RENE";
 
   const entregas = [
-    { cliente: "DECIO COMERCIO", codcli: 10500, bairro: "ZONA RURAL", pallets: 12, itens: 30, peso: 91.090, volume: 0.122, creditos: 0 },
-    { cliente: "MINIMERCADO ORNELAS", codcli: 10198, bairro: "PARQUE SAO JORGE", pallets: 12, itens: 2, peso: 5.200, volume: 0.123, creditos: 2 }
+    { codcli: 10500, cliente: "DECIO COMERCIO", bairro: "ZONA RURAL", pallets: 12, itens: 30, peso: 91.090, volume: 0.122, creditos: 0 },
+    { codcli: 10198, cliente: "MINIMERCADO ORNELAS", bairro: "PARQUE SAO JORGE", pallets: 12, itens: 2, peso: 5.200, volume: 0.123, creditos: 2 }
   ];
 
   let html = `
@@ -57,17 +57,25 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         background:#3A209D;
         color:white;
         padding:15px;
+      }
+
+      .header-top {
         display:flex;
         justify-content:space-between;
         align-items:center;
       }
 
-      .header-info {
-        font-size:12px;
+      .titulo {
+        font-size:20px;
+        font-weight:bold;
       }
 
-      .header img {
-        height:40px;
+      .sub {
+        font-size:13px;
+      }
+
+      .logo {
+        height:50px;
       }
 
       .container {
@@ -76,11 +84,11 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
       .linha {
         background:white;
-        padding:8px;
-        margin-bottom:6px;
         border-radius:6px;
-        display:flex;
-        justify-content:space-between;
+        padding:10px;
+        margin-bottom:6px;
+        display:grid;
+        grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
         align-items:center;
         font-size:12px;
       }
@@ -89,51 +97,72 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         font-weight:bold;
       }
 
+      .bairro {
+        text-align:center;
+      }
+
       .dados {
-        display:flex;
-        gap:10px;
+        text-align:right;
       }
 
       .red {
         color:red;
         font-weight:bold;
       }
+
+      .col-header {
+        font-weight:bold;
+        padding:5px 10px;
+        display:grid;
+        grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
+        font-size:12px;
+      }
+
     </style>
   </head>
 
   <body>
 
     <div class="header">
-      <div>
-        <div><b>Carga:</b> ${numcar}</div>
-        <div class="header-info">Placa: ${placa}</div>
-        <div class="header-info">Motorista: ${motorista}</div>
-        <div class="header-info">Ajud: ${ajudante1} / ${ajudante2}</div>
-      </div>
+      <div class="header-top">
+        <div>
+          <div class="titulo">Carga ${numcar}</div>
+          <div class="sub">Placa: ${placa}</div>
+          <div class="sub">Motorista: ${motorista}</div>
+          <div class="sub">Ajud: ${ajudante1} / ${ajudante2}</div>
+        </div>
 
-      <div>
-        <img src="https://cdn-icons-png.flaticon.com/512/1995/1995501.png">
+        <!-- TROCAR AQUI PELA SUA LOGO -->
+        <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/512px-React-icon.svg.png">
       </div>
     </div>
 
     <div class="container">
+
+      <div class="col-header">
+        <div>Cliente</div>
+        <div>Bairro</div>
+        <div>Pallet</div>
+        <div>Itens</div>
+        <div>Peso</div>
+        <div>Vol</div>
+      </div>
   `;
 
   entregas.forEach(e => {
     html += `
       <div class="linha ${e.creditos > 0 ? 'red' : ''}">
-        
+
         <div>
-          <div class="cliente">${e.cliente}</div>
-          <div>${e.bairro}</div>
+          <div class="cliente">${e.codcli} - ${e.cliente}</div>
         </div>
 
-        <div class="dados">
-          <span>📦 ${e.itens}</span>
-          <span>🧱 ${e.pallets}</span>
-          <span>⚖️ ${e.peso}</span>
-          <span>📐 ${e.volume}</span>
-        </div>
+        <div class="bairro">${e.bairro}</div>
+
+        <div class="dados">${e.pallets}</div>
+        <div class="dados">${e.itens}</div>
+        <div class="dados">${e.peso.toFixed(3)}</div>
+        <div class="dados">${e.volume.toFixed(3)}</div>
 
       </div>
     `;
@@ -141,12 +170,13 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
   html += `
     </div>
+
   </body>
   </html>
   `;
 
   res.send(html);
-});
+});s
 // ================= ENTREGAS =================
 app.get('/entregas', (req, res) => {
   res.json([
