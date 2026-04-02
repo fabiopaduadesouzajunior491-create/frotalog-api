@@ -29,7 +29,7 @@ app.get('/cargas', (req, res) => {
   ]);
 });
 
-// ================= ROMANEIO (JSON) =================
+// ================= ROMANEIO VIEW (HTML) =================
 app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   const numcar = req.params.numcar;
 
@@ -132,7 +132,6 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
           <div class="sub">Ajud: ${ajudante1} / ${ajudante2}</div>
         </div>
 
-        <!-- TROCAR AQUI PELA SUA LOGO -->
         <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/512px-React-icon.svg.png">
       </div>
     </div>
@@ -170,13 +169,13 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
   html += `
     </div>
-
   </body>
   </html>
   `;
 
   res.send(html);
-});s
+});
+
 // ================= ENTREGAS =================
 app.get('/entregas', (req, res) => {
   res.json([
@@ -222,6 +221,6 @@ app.get('/transbordos', (req, res) => {
 });
 
 // ================= SERVIDOR =================
-app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Servidor rodando');
 });
