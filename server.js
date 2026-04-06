@@ -186,9 +186,8 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 });
 
 // ================= ENTREGAS (COM GEO) =================
-app.get('/entregas', async (req, res) => {
-
-  const base = [
+app.get('/entregas', (req, res) => {
+  res.json([
     {
       numcar: 12345,
       seq_rota: 1,
@@ -197,11 +196,17 @@ app.get('/entregas', async (req, res) => {
       bairro: "CENTRO",
       cidade: "MONTE CARMELO",
       telefone: "34999999999",
+
+      // 🔥 GEO (ESSENCIAL)
+      lat: -18.724,
+      lng: -47.491,
+
       paletes: 3,
       valor_total: 1500.50,
       observacao: "ENTREGAR NO FUNDO"
     }
-  ];
+  ]);
+});
 
   // 🔥 adiciona LAT/LNG automaticamente
   const entregas = await Promise.all(base.map(async (e) => {
