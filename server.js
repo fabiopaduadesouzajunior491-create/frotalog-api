@@ -136,7 +136,7 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
           <div class="sub">Ajud: ${ajudante1} / ${ajudante2}</div>
         </div>
 
-        <img class="logo" src="https://raw.githubusercontent.com/fabiopaduadesouzajunior491-create/Foto-LogoFmartins/blob/254a5c44e3b1060d1953d4d7215012af1b015942/caminh%C3%A3o.png">
+        <img class="logo" src="https://raw.githubusercontent.com/fabiopaduadesouzajunior491-create/Foto-LogoFmartins/254a5c44e3b1060d1953d4d7215012af1b015942/caminh%C3%A3o.png">
       </div>
     </div>
 
