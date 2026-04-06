@@ -6,6 +6,15 @@ app.get('/', (req, res) => {
   res.json({ message: 'API FROTALOG OK' });
 });
 
+// ================= FUNÇÃO GEO (PREPARAÇÃO FUTURA) =================
+async function geocodificar(endereco, cidade) {
+  // FUTURO: integrar com Google Maps ou OpenCage
+  return {
+    lat: -18.724,
+    lng: -47.491
+  };
+}
+
 // ================= CARGAS =================
 app.get('/cargas', (req, res) => {
   res.json([
@@ -97,17 +106,13 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         font-weight:bold;
       }
 
-      .bairro {
-        text-align:center;
+      .text-left {
+        text-align: left;
       }
 
-   .text-left {
-  text-align: left;
-}
-
-.text-center {
-  text-align: left;
-}
+      .text-center {
+        text-align: center;
+      }
 
       .red {
         color:red;
@@ -143,7 +148,8 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
     <div class="container">
 
       <div class="col-header">
-        <div>Cliente</div>        <div>Bairro</div>
+        <div>Cliente</div>
+        <div>Bairro</div>
         <div>Pallet</div>
         <div>Itens</div>
         <div>Peso</div>
@@ -155,16 +161,16 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
     html += `
       <div class="linha ${e.creditos > 0 ? 'red' : ''}">
 
-        <div>
+        <div class="text-left">
           <div class="cliente">${e.codcli} - ${e.cliente}</div>
         </div>
 
-        <div class="bairro text-left">${e.bairro}</div>
+        <div class="text-left">${e.bairro}</div>
 
-<div class="text-center">${e.pallets}</div>
-<div class="text-center">${e.itens}</div>
-<div class="text-center">${e.peso.toFixed(3)}</div>
-<div class="text-center">${e.volume.toFixed(3)}</div>
+        <div class="text-center">${e.pallets}</div>
+        <div class="text-center">${e.itens}</div>
+        <div class="text-center">${e.peso.toFixed(3)}</div>
+        <div class="text-center">${e.volume.toFixed(3)}</div>
 
       </div>
     `;
@@ -179,9 +185,10 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   res.send(html);
 });
 
-// ================= ENTREGAS =================
-app.get('/entregas', (req, res) => {
-  res.json([
+// ================= ENTREGAS (COM GEO) =================
+app.get('/entregas', async (req, res) => {
+
+  const base = [
     {
       numcar: 12345,
       seq_rota: 1,
@@ -190,13 +197,24 @@ app.get('/entregas', (req, res) => {
       bairro: "CENTRO",
       cidade: "MONTE CARMELO",
       telefone: "34999999999",
-
       paletes: 3,
       valor_total: 1500.50,
-
       observacao: "ENTREGAR NO FUNDO"
     }
-  ]);
+  ];
+
+  // 🔥 adiciona LAT/LNG automaticamente
+  const entregas = await Promise.all(base.map(async (e) => {
+    const geo = await geocodificar(e.endereco, e.cidade);
+
+    return {
+      ...e,
+      lat: geo.lat,
+      lng: geo.lng
+    };
+  }));
+
+  res.json(entregas);
 });
 
 // ================= TRANSBORDOS =================
@@ -204,7 +222,6 @@ app.get('/transbordos', (req, res) => {
   res.json([
     {
       numcar: 12345,
-
       cidade_origem: "UBERLANDIA",
       cidade_destino: "ARAGUARI",
 
