@@ -87,7 +87,13 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
     <style>
       body { font-family: Arial; margin:0; background:#f4f6f9; }
 
-      .header { background:#3A209D; color:white; padding:15px; }
+      .header {
+  background:#3A209D;
+  color:white;
+  padding:15px;
+  padding-right:120px; /* 🔥 espaço pra logo */
+  position:relative;
+}
 
       .data {
         font-size:11px;
@@ -133,11 +139,11 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
       }
 
       .logo {
-        position:absolute;
-        right:15px;
-        top:10px;
-        height:100px; /* 🔥 maior */
-      }
+  position:absolute;
+  right:10px;
+  top:10px;
+  height:90px;
+}
 
       .container { padding:10px; }
 
