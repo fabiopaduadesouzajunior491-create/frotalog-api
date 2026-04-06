@@ -178,9 +178,6 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         border-top:2px solid #000;
         text-align:right;
       }
-
-    </style>
-  </head>
 .linha-motoristas {
   display:flex;
   justify-content:space-between;
@@ -197,6 +194,9 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 .box-linha {
   font-weight:bold;
 }
+    </style>
+  </head>
+
   <body>
 
     <div class="header">
@@ -208,10 +208,10 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
       </div>
 
       <div class="linha-topo">
-        <div class="carga">Carga: ${numcar}</div>
-        <div class="placa">Placa: ${placa}</div>
-        <div class="box">BOX: ${box}</div>
-      </div>
+  <div class="carga">Carga: ${numcar}</div>
+  <div class="placa">Placa: ${placa}</div>
+  <div></div> <!-- vazio pra manter alinhamento -->
+</div>
 
     <div class="linha-motoristas">
   <div class="lado-esquerdo">
