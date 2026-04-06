@@ -185,7 +185,7 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   res.send(html);
 });
 
-// ================= ENTREGAS (COM GEO) =================
+// ================= ENTREGAS (COM GEO CORRETO) =================
 app.get('/entregas', (req, res) => {
   res.json([
     {
