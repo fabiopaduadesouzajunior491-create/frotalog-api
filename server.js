@@ -6,46 +6,23 @@ app.get('/', (req, res) => {
   res.json({ message: 'API FROTALOG OK' });
 });
 
-// ================= FUNÇÃO GEO (PREPARAÇÃO FUTURA) =================
-async function geocodificar(endereco, cidade) {
-  // FUTURO: integrar com Google Maps ou OpenCage
-  return {
-    lat: -18.724,
-    lng: -47.491
-  };
-}
-
 // ================= CARGAS =================
 app.get('/cargas', (req, res) => {
   res.json([
     {
       numcar: 12345,
       tipo: "TRANSBORDO",
-
-      motorista_entrega: {
-        external_id: 101,
-        nome: "JOAO"
-      },
-
-      motorista_transbordo: {
-        external_id: 202,
-        nome: "CARLOS"
-      },
-
+      motorista_entrega: { external_id: 101, nome: "JOAO" },
+      motorista_transbordo: { external_id: 202, nome: "CARLOS" },
       veiculo_principal: "ABC-1234",
       julietas: ["DEF-5678", "GHI-9999"]
     }
   ]);
 });
 
-// ================= ROMANEIO VIEW (HTML) =================
+// ================= ROMANEIO =================
 app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   const numcar = req.params.numcar;
-
-  const placa = "HNL8J25";
-  const motorista = "VILMAR";
-  const ajudante1 = "307-WAGNER";
-  const ajudante2 = "425-RENE";
 
   const entregas = [
     { codcli: 10500, cliente: "DECIO COMERCIO", bairro: "ZONA RURAL", pallets: 12, itens: 30, peso: 91.090, volume: 0.122, creditos: 0 },
@@ -54,124 +31,20 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
   let html = `
   <html>
-  <head>
-    <style>
-      body {
-        font-family: Arial;
-        margin:0;
-        background:#f4f6f9;
-      }
+  <body style="font-family:Arial;background:#f4f6f9;margin:0">
 
-      .header {
-        background:#3A209D;
-        color:white;
-        padding:15px;
-      }
-
-      .header-top {
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-      }
-
-      .titulo {
-        font-size:20px;
-        font-weight:bold;
-      }
-
-      .sub {
-        font-size:13px;
-      }
-
-      .logo {
-        height:50px;
-      }
-
-      .container {
-        padding:10px;
-      }
-
-      .linha {
-        background:white;
-        border-radius:6px;
-        padding:10px;
-        margin-bottom:6px;
-        display:grid;
-        grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
-        align-items:center;
-        font-size:12px;
-      }
-
-      .cliente {
-        font-weight:bold;
-      }
-
-      .text-left {
-        text-align: left;
-      }
-
-      .text-center {
-        text-align: center;
-      }
-
-      .red {
-        color:red;
-        font-weight:bold;
-      }
-
-      .col-header {
-        font-weight:bold;
-        padding:5px 10px;
-        display:grid;
-        grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
-        font-size:12px;
-      }
-
-    </style>
-  </head>
-
-  <body>
-
-    <div class="header">
-      <div class="header-top">
-        <div>
-          <div class="titulo">Carga ${numcar}</div>
-          <div class="sub">Placa: ${placa}</div>
-          <div class="sub">Motorista: ${motorista}</div>
-          <div class="sub">Ajud: ${ajudante1} / ${ajudante2}</div>
-        </div>
-
-        <img class="logo" src="https://raw.githubusercontent.com/fabiopaduadesouzajunior491-create/Foto-LogoFmartins/254a5c44e3b1060d1953d4d7215012af1b015942/caminh%C3%A3o.png">
-      </div>
+    <div style="background:#3A209D;color:white;padding:15px">
+      <h2>Carga ${numcar}</h2>
     </div>
 
-    <div class="container">
-
-      <div class="col-header">
-        <div>Cliente</div>
-        <div>Bairro</div>
-        <div>Pallet</div>
-        <div>Itens</div>
-        <div>Peso</div>
-        <div>Vol</div>
-      </div>
+    <div style="padding:10px">
   `;
 
   entregas.forEach(e => {
     html += `
-      <div class="linha ${e.creditos > 0 ? 'red' : ''}">
-
-        <div class="text-left">
-          <div class="cliente">${e.codcli} - ${e.cliente}</div>
-        </div>
-
-        <div class="text-left">${e.bairro}</div>
-
-        <div class="text-center">${e.pallets}</div>
-        <div class="text-center">${e.itens}</div>
-        <div class="text-center">${e.peso.toFixed(3)}</div>
-        <div class="text-center">${e.volume.toFixed(3)}</div>
-
+      <div style="background:white;margin-bottom:5px;padding:10px">
+        <b>${e.codcli} - ${e.cliente}</b> - ${e.bairro} |
+        ${e.pallets} pallet | ${e.itens} itens | ${e.peso} kg
       </div>
     `;
   });
@@ -185,9 +58,9 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   res.send(html);
 });
 
-// ================= ENTREGAS (COM GEO CORRETO) =================
+// ================= ENTREGAS (COM GEO) =================
 app.get('/entregas', (req, res) => {
-  res.json([
+  const entregas = [
     {
       numcar: 12345,
       seq_rota: 1,
@@ -195,29 +68,14 @@ app.get('/entregas', (req, res) => {
       endereco: "RUA A, 123",
       bairro: "CENTRO",
       cidade: "MONTE CARMELO",
-      telefone: "34999999999",
 
-      // 🔥 GEO (ESSENCIAL)
       lat: -18.724,
       lng: -47.491,
 
       paletes: 3,
-      valor_total: 1500.50,
-      observacao: "ENTREGAR NO FUNDO"
+      valor_total: 1500.50
     }
-  ]);
-});
-
-  // 🔥 adiciona LAT/LNG automaticamente
-  const entregas = await Promise.all(base.map(async (e) => {
-    const geo = await geocodificar(e.endereco, e.cidade);
-
-    return {
-      ...e,
-      lat: geo.lat,
-      lng: geo.lng
-    };
-  }));
+  ];
 
   res.json(entregas);
 });
@@ -229,18 +87,9 @@ app.get('/transbordos', (req, res) => {
       numcar: 12345,
       cidade_origem: "UBERLANDIA",
       cidade_destino: "ARAGUARI",
-
-      motorista_transbordo: {
-        nome: "CARLOS"
-      },
-
-      motorista_entrega: {
-        nome: "JOAO"
-      },
-
-      cavalo: "ABC-1234",
-      julieta_1: "DEF-5678",
-      julieta_2: "GHI-9999"
+      motorista_transbordo: { nome: "CARLOS" },
+      motorista_entrega: { nome: "JOAO" },
+      cavalo: "ABC-1234"
     }
   ]);
 });
