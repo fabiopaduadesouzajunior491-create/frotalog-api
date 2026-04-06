@@ -58,12 +58,17 @@ app.get('/cargas', (req, res) => {
 app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   const numcar = req.params.numcar;
 
-  const placa = "HNL8J25";
-  const motorista = "VILMAR";
-  const ajudante1 = "307-WAGNER";
-  const ajudante2 = "425-RENE";
+  const placa = "QNU5479";
+  const motorista = "LEONILDO";
+  const ajudante1 = "2017-TERCEIROS1";
+  const ajudante2 = "553-NATANAEL";
+  const data = "06/04/2026";
+  const box = "20";
 
-  const entregas = getEntregas();
+  let entregas = getEntregas();
+
+  // 🔥 ORDENAÇÃO REAL (SEQROTA)
+  entregas.sort((a, b) => a.seq - b.seq);
 
   // 🔥 TOTAL
   let totalItens = 0;
@@ -80,16 +85,15 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   <html>
   <head>
     <style>
-      body {
-        font-family: Arial;
-        margin:0;
-        background:#f4f6f9;
-      }
+      body { font-family: Arial; margin:0; background:#f4f6f9; }
 
-      .header {
-        background:#3A209D;
-        color:white;
-        padding:15px;
+      .header { background:#3A209D; color:white; padding:15px; }
+
+      .titulo-central {
+        text-align:center;
+        font-size:22px;
+        font-weight:bold;
+        margin-bottom:10px;
       }
 
       .header-top {
@@ -98,21 +102,16 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         align-items:center;
       }
 
-      .titulo {
-        font-size:20px;
+      .logo { height:80px; }
+
+      .container { padding:10px; }
+
+      .cidade {
+        background:black;
+        color:white;
+        padding:5px;
+        margin-top:10px;
         font-weight:bold;
-      }
-
-      .sub {
-        font-size:13px;
-      }
-
-      .logo {
-        height:50px;
-      }
-
-      .container {
-        padding:10px;
       }
 
       .linha {
@@ -122,34 +121,13 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         margin-bottom:6px;
         display:grid;
         grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
-        align-items:center;
         font-size:12px;
       }
 
-      .cliente {
-        font-weight:bold;
-      }
+      .text-left { text-align:left; }
+      .text-center { text-align:center; }
 
-      .text-left {
-        text-align: left;
-      }
-
-      .text-center {
-        text-align: center;
-      }
-
-      .red {
-        color:red;
-        font-weight:bold;
-      }
-
-      .col-header {
-        font-weight:bold;
-        padding:5px 10px;
-        display:grid;
-        grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
-        font-size:12px;
-      }
+      .red { color:red; font-weight:bold; }
 
       .total {
         background:white;
@@ -157,7 +135,7 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         margin-top:10px;
         font-weight:bold;
         border-top:2px solid #000;
-        text-align:right; /* 🔥 DIREITA */
+        text-align:right;
       }
 
     </style>
@@ -166,50 +144,59 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   <body>
 
     <div class="header">
+
+      <div class="titulo-central">
+        ROTEIRO DE ENTREGAS DO CARREGAMENTO
+      </div>
+
       <div class="header-top">
         <div>
-          <div class="titulo">Carga ${numcar}</div>
-          <div class="sub">Placa: ${placa}</div>
-          <div class="sub">Motorista: ${motorista}</div>
-          <div class="sub">Ajud: ${ajudante1} / ${ajudante2}</div>
+          <div>Data: ${data}</div>
+          <div>Placa: ${placa}</div>
+          <div>Carga: ${numcar}</div>
+          <div>BOX: ${box}</div>
+
+          ${
+            motorista 
+              ? `<div>Motorista: ${motorista}</div>`
+              : `<div>Motorista: NÃO DEFINIDO</div>`
+          }
+
+          <div>Ajudante 1: ${ajudante1}</div>
+          <div>Ajudante 2: ${ajudante2}</div>
         </div>
 
         <img class="logo" src="https://raw.githubusercontent.com/fabiopaduadesouzajunior491-create/Foto-LogoFmartins/254a5c44e3b1060d1953d4d7215012af1b015942/caminh%C3%A3o.png">
       </div>
+
     </div>
 
     <div class="container">
-
-      <div class="col-header">
-        <div>Cliente</div>
-        <div>Bairro</div>
-        <div>Pallet</div>
-        <div>Itens</div>
-        <div>Peso</div>
-        <div>Vol</div>
-      </div>
   `;
 
+  // 🔥 MOSTRAR CIDADE SEM QUEBRAR ROTA
+  let ultimaCidade = "";
+
   entregas.forEach(e => {
+
+    if (e.cidade !== ultimaCidade) {
+      html += `<div class="cidade">${e.cidade}</div>`;
+      ultimaCidade = e.cidade;
+    }
+
     html += `
       <div class="linha ${e.creditos > 0 ? 'red' : ''}">
-
-        <div class="text-left">
-          <div class="cliente">${e.codcli} - ${e.cliente}</div>
-        </div>
-
+        <div class="text-left">${e.codcli} - ${e.cliente}</div>
         <div class="text-left">${e.bairro}</div>
-
         <div class="text-center">${e.pallets}</div>
         <div class="text-center">${e.itens}</div>
         <div class="text-center">${e.peso.toFixed(3)}</div>
         <div class="text-center">${e.volume.toFixed(3)}</div>
-
       </div>
     `;
   });
 
-  // 🔥 TOTAL ALINHADO À DIREITA
+  // 🔥 TOTAL DIREITA
   html += `
     <div class="total">
       TOTAL: ${entregas.length} entregas | 
