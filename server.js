@@ -57,6 +57,12 @@ app.get('/cargas', (req, res) => {
 // ================= ROMANEIO =================
 app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   const numcar = req.params.numcar;
+
+  const placa = "HNL8J25";
+  const motorista = "VILMAR";
+  const ajudante1 = "307-WAGNER";
+  const ajudante2 = "425-RENE";
+
   const entregas = getEntregas();
 
   // 🔥 TOTAL
@@ -74,9 +80,41 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   <html>
   <head>
     <style>
-      body { font-family: Arial; margin:0; background:#f4f6f9; }
-      .header { background:#3A209D; color:white; padding:15px; }
-      .container { padding:10px; }
+      body {
+        font-family: Arial;
+        margin:0;
+        background:#f4f6f9;
+      }
+
+      .header {
+        background:#3A209D;
+        color:white;
+        padding:15px;
+      }
+
+      .header-top {
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+      }
+
+      .titulo {
+        font-size:20px;
+        font-weight:bold;
+      }
+
+      .sub {
+        font-size:13px;
+      }
+
+      .logo {
+        height:50px;
+      }
+
+      .container {
+        padding:10px;
+      }
+
       .linha {
         background:white;
         border-radius:6px;
@@ -84,44 +122,94 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         margin-bottom:6px;
         display:grid;
         grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
+        align-items:center;
         font-size:12px;
       }
-      .text-left { text-align:left; }
-      .text-center { text-align:center; }
-      .red { color:red; font-weight:bold; }
+
+      .cliente {
+        font-weight:bold;
+      }
+
+      .text-left {
+        text-align: left;
+      }
+
+      .text-center {
+        text-align: center;
+      }
+
+      .red {
+        color:red;
+        font-weight:bold;
+      }
+
+      .col-header {
+        font-weight:bold;
+        padding:5px 10px;
+        display:grid;
+        grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
+        font-size:12px;
+      }
+
       .total {
-        background:#fff;
+        background:white;
         padding:10px;
         margin-top:10px;
         font-weight:bold;
         border-top:2px solid #000;
+        text-align:right; /* 🔥 DIREITA */
       }
+
     </style>
   </head>
 
   <body>
 
     <div class="header">
-      <b>Carga ${numcar}</b>
+      <div class="header-top">
+        <div>
+          <div class="titulo">Carga ${numcar}</div>
+          <div class="sub">Placa: ${placa}</div>
+          <div class="sub">Motorista: ${motorista}</div>
+          <div class="sub">Ajud: ${ajudante1} / ${ajudante2}</div>
+        </div>
+
+        <img class="logo" src="https://raw.githubusercontent.com/fabiopaduadesouzajunior491-create/Foto-LogoFmartins/254a5c44e3b1060d1953d4d7215012af1b015942/caminh%C3%A3o.png">
+      </div>
     </div>
 
     <div class="container">
+
+      <div class="col-header">
+        <div>Cliente</div>
+        <div>Bairro</div>
+        <div>Pallet</div>
+        <div>Itens</div>
+        <div>Peso</div>
+        <div>Vol</div>
+      </div>
   `;
 
   entregas.forEach(e => {
     html += `
       <div class="linha ${e.creditos > 0 ? 'red' : ''}">
-        <div class="text-left">${e.codcli} - ${e.cliente}</div>
+
+        <div class="text-left">
+          <div class="cliente">${e.codcli} - ${e.cliente}</div>
+        </div>
+
         <div class="text-left">${e.bairro}</div>
+
         <div class="text-center">${e.pallets}</div>
         <div class="text-center">${e.itens}</div>
         <div class="text-center">${e.peso.toFixed(3)}</div>
         <div class="text-center">${e.volume.toFixed(3)}</div>
+
       </div>
     `;
   });
 
-  // 🔥 TOTAL (SEM MUDAR SUA ESTRUTURA)
+  // 🔥 TOTAL ALINHADO À DIREITA
   html += `
     <div class="total">
       TOTAL: ${entregas.length} entregas | 
@@ -139,7 +227,6 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
   res.send(html);
 });
-
 // ================= ENTREGAS (APP) =================
 app.get('/entregas', (req, res) => {
   const entregas = getEntregas();
