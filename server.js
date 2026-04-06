@@ -181,7 +181,22 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
     </style>
   </head>
+.linha-motoristas {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  font-size:13px;
+}
 
+.lado-esquerdo {
+  display:flex;
+  gap:20px;
+}
+
+.box-linha {
+  font-weight:bold;
+}
   <body>
 
     <div class="header">
@@ -198,11 +213,17 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
         <div class="box">BOX: ${box}</div>
       </div>
 
-      <div class="motoristas">
-        <div>Motorista: ${motorista || 'NÃO DEFINIDO'}</div>
-        <div>Ajudante 1: ${ajudante1}</div>
-        <div>Ajudante 2: ${ajudante2}</div>
-      </div>
+    <div class="linha-motoristas">
+  <div class="lado-esquerdo">
+    <span>Motorista: ${motorista || 'NÃO DEFINIDO'}</span>
+    <span>Ajudante 1: ${ajudante1}</span>
+    <span>Ajudante 2: ${ajudante2}</span>
+  </div>
+
+  <div class="box-linha">
+    BOX: ${box}
+  </div>
+</div>
 
       <img class="logo" src="https://raw.githubusercontent.com/fabiopaduadesouzajunior491-create/Foto-LogoFmartins/254a5c44e3b1060d1953d4d7215012af1b015942/caminh%C3%A3o.png">
 
