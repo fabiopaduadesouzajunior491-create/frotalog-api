@@ -29,6 +29,18 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
     { codcli: 10198, cliente: "MINIMERCADO ORNELAS", bairro: "PARQUE SAO JORGE", pallets: 12, itens: 2, peso: 5.200, volume: 0.123, creditos: 2 }
   ];
 
+  // 🔥 CALCULAR TOTAIS
+  let totalItens = 0;
+  let totalPeso = 0;
+  let totalVolume = 0;
+  let totalEntregas = entregas.length;
+
+  entregas.forEach(e => {
+    totalItens += e.itens;
+    totalPeso += e.peso;
+    totalVolume += e.volume;
+  });
+
   let html = `
   <html>
   <body style="font-family:Arial;background:#f4f6f9;margin:0">
@@ -48,6 +60,16 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
       </div>
     `;
   });
+
+  // 🔥 LINHA DE TOTAL
+  html += `
+      <div style="background:#eee;padding:12px;margin-top:10px;font-weight:bold;border-radius:5px">
+        TOTAL: ${totalEntregas} entregas | 
+        ${totalItens} itens | 
+        ${totalPeso.toFixed(2)} kg | 
+        ${totalVolume.toFixed(3)} m³
+      </div>
+  `;
 
   html += `
     </div>
