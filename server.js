@@ -6,6 +6,40 @@ app.get('/', (req, res) => {
   res.json({ message: 'API FROTALOG OK' });
 });
 
+// ================= DADOS BASE (SIMULA SELECT) =================
+function getEntregas() {
+  return [
+    {
+      codcli: 10500,
+      cliente: "DECIO COMERCIO",
+      bairro: "ZONA RURAL",
+      cidade: "MONTE CARMELO",
+      seq: 1,
+      pallets: 12,
+      itens: 30,
+      peso: 91.090,
+      volume: 0.122,
+      creditos: 0,
+      lat: -18.724,
+      lng: -47.491
+    },
+    {
+      codcli: 10198,
+      cliente: "MINIMERCADO ORNELAS",
+      bairro: "PARQUE SAO JORGE",
+      cidade: "MONTE CARMELO",
+      seq: 2,
+      pallets: 5,
+      itens: 2,
+      peso: 5.200,
+      volume: 0.123,
+      creditos: 2,
+      lat: -18.720,
+      lng: -47.480
+    }
+  ];
+}
+
 // ================= CARGAS =================
 app.get('/cargas', (req, res) => {
   res.json([
@@ -23,17 +57,12 @@ app.get('/cargas', (req, res) => {
 // ================= ROMANEIO =================
 app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   const numcar = req.params.numcar;
+  const entregas = getEntregas();
 
-  const entregas = [
-    { codcli: 10500, cliente: "DECIO COMERCIO", bairro: "ZONA RURAL", pallets: 12, itens: 30, peso: 91.090, volume: 0.122, creditos: 0 },
-    { codcli: 10198, cliente: "MINIMERCADO ORNELAS", bairro: "PARQUE SAO JORGE", pallets: 12, itens: 2, peso: 5.200, volume: 0.123, creditos: 2 }
-  ];
-
-  // 🔥 CALCULAR TOTAIS
+  // 🔥 TOTAL
   let totalItens = 0;
   let totalPeso = 0;
   let totalVolume = 0;
-  let totalEntregas = entregas.length;
 
   entregas.forEach(e => {
     totalItens += e.itens;
@@ -43,32 +72,63 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
   let html = `
   <html>
-  <body style="font-family:Arial;background:#f4f6f9;margin:0">
+  <head>
+    <style>
+      body { font-family: Arial; margin:0; background:#f4f6f9; }
+      .header { background:#3A209D; color:white; padding:15px; }
+      .container { padding:10px; }
+      .linha {
+        background:white;
+        border-radius:6px;
+        padding:10px;
+        margin-bottom:6px;
+        display:grid;
+        grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
+        font-size:12px;
+      }
+      .text-left { text-align:left; }
+      .text-center { text-align:center; }
+      .red { color:red; font-weight:bold; }
+      .total {
+        background:#fff;
+        padding:10px;
+        margin-top:10px;
+        font-weight:bold;
+        border-top:2px solid #000;
+      }
+    </style>
+  </head>
 
-    <div style="background:#3A209D;color:white;padding:15px">
-      <h2>Carga ${numcar}</h2>
+  <body>
+
+    <div class="header">
+      <b>Carga ${numcar}</b>
     </div>
 
-    <div style="padding:10px">
+    <div class="container">
   `;
 
   entregas.forEach(e => {
     html += `
-      <div style="background:white;margin-bottom:5px;padding:10px">
-        <b>${e.codcli} - ${e.cliente}</b> - ${e.bairro} |
-        ${e.pallets} pallet | ${e.itens} itens | ${e.peso} kg
+      <div class="linha ${e.creditos > 0 ? 'red' : ''}">
+        <div class="text-left">${e.codcli} - ${e.cliente}</div>
+        <div class="text-left">${e.bairro}</div>
+        <div class="text-center">${e.pallets}</div>
+        <div class="text-center">${e.itens}</div>
+        <div class="text-center">${e.peso.toFixed(3)}</div>
+        <div class="text-center">${e.volume.toFixed(3)}</div>
       </div>
     `;
   });
 
-  // 🔥 LINHA DE TOTAL
+  // 🔥 TOTAL (SEM MUDAR SUA ESTRUTURA)
   html += `
-      <div style="background:#eee;padding:12px;margin-top:10px;font-weight:bold;border-radius:5px">
-        TOTAL: ${totalEntregas} entregas | 
-        ${totalItens} itens | 
-        ${totalPeso.toFixed(2)} kg | 
-        ${totalVolume.toFixed(3)} m³
-      </div>
+    <div class="total">
+      TOTAL: ${entregas.length} entregas | 
+      ${totalItens} itens | 
+      ${totalPeso.toFixed(2)} kg | 
+      ${totalVolume.toFixed(3)} m³
+    </div>
   `;
 
   html += `
@@ -80,24 +140,9 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
   res.send(html);
 });
 
-// ================= ENTREGAS (COM GEO) =================
+// ================= ENTREGAS (APP) =================
 app.get('/entregas', (req, res) => {
-  const entregas = [
-    {
-      numcar: 12345,
-      seq_rota: 1,
-      cliente: "SUPERMERCADO XYZ",
-      endereco: "RUA A, 123",
-      bairro: "CENTRO",
-      cidade: "MONTE CARMELO",
-
-      lat: -18.724,
-      lng: -47.491,
-
-      paletes: 3,
-      valor_total: 1500.50
-    }
-  ];
+  const entregas = getEntregas();
 
   res.json(entregas);
 });
