@@ -67,10 +67,10 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
   let entregas = getEntregas();
 
-  // 🔥 ORDENAÇÃO REAL (SEQROTA)
+  // ORDEM CORRETA
   entregas.sort((a, b) => a.seq - b.seq);
 
-  // 🔥 TOTAL
+  // TOTAIS
   let totalItens = 0;
   let totalPeso = 0;
   let totalVolume = 0;
@@ -89,20 +89,55 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
       .header { background:#3A209D; color:white; padding:15px; }
 
-      .titulo-central {
+      .data {
+        font-size:11px;
+        position:absolute;
+        top:5px;
+        left:10px;
+      }
+
+      .titulo {
         text-align:center;
         font-size:22px;
         font-weight:bold;
-        margin-bottom:10px;
       }
 
-      .header-top {
-        display:flex;
-        justify-content:space-between;
+      .linha-topo {
+        display:grid;
+        grid-template-columns: 1fr 1fr 1fr;
         align-items:center;
+        margin-top:5px;
       }
 
-      .logo { height:80px; }
+      .carga {
+        font-size:18px;
+        font-weight:bold;
+        text-align:left;
+      }
+
+      .placa {
+        text-align:center;
+        font-size:14px;
+      }
+
+      .box {
+        text-align:right;
+        font-size:14px;
+      }
+
+      .motoristas {
+        margin-top:10px;
+        display:flex;
+        gap:20px;
+        font-size:13px;
+      }
+
+      .logo {
+        position:absolute;
+        right:15px;
+        top:10px;
+        height:100px; /* 🔥 maior */
+      }
 
       .container { padding:10px; }
 
@@ -145,36 +180,31 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
 
     <div class="header">
 
-      <div class="titulo-central">
+      <div class="data">Data: ${data}</div>
+
+      <div class="titulo">
         ROTEIRO DE ENTREGAS DO CARREGAMENTO
       </div>
 
-      <div class="header-top">
-        <div>
-          <div>Data: ${data}</div>
-          <div>Placa: ${placa}</div>
-          <div>Carga: ${numcar}</div>
-          <div>BOX: ${box}</div>
-
-          ${
-            motorista 
-              ? `<div>Motorista: ${motorista}</div>`
-              : `<div>Motorista: NÃO DEFINIDO</div>`
-          }
-
-          <div>Ajudante 1: ${ajudante1}</div>
-          <div>Ajudante 2: ${ajudante2}</div>
-        </div>
-
-        <img class="logo" src="https://raw.githubusercontent.com/fabiopaduadesouzajunior491-create/Foto-LogoFmartins/254a5c44e3b1060d1953d4d7215012af1b015942/caminh%C3%A3o.png">
+      <div class="linha-topo">
+        <div class="carga">Carga: ${numcar}</div>
+        <div class="placa">Placa: ${placa}</div>
+        <div class="box">BOX: ${box}</div>
       </div>
+
+      <div class="motoristas">
+        <div>Motorista: ${motorista || 'NÃO DEFINIDO'}</div>
+        <div>Ajudante 1: ${ajudante1}</div>
+        <div>Ajudante 2: ${ajudante2}</div>
+      </div>
+
+      <img class="logo" src="https://raw.githubusercontent.com/fabiopaduadesouzajunior491-create/Foto-LogoFmartins/254a5c44e3b1060d1953d4d7215012af1b015942/caminh%C3%A3o.png">
 
     </div>
 
     <div class="container">
   `;
 
-  // 🔥 MOSTRAR CIDADE SEM QUEBRAR ROTA
   let ultimaCidade = "";
 
   entregas.forEach(e => {
@@ -196,7 +226,6 @@ app.get('/cargas/:numcar/romaneio-view', (req, res) => {
     `;
   });
 
-  // 🔥 TOTAL DIREITA
   html += `
     <div class="total">
       TOTAL: ${entregas.length} entregas | 
