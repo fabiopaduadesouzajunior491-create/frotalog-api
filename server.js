@@ -1,9 +1,5 @@
 const oracledb = require('oracledb');
 
-oracledb.initOracleClient({
-  libDir: 'C:\\oracle_client\\instantclient_19_30'
-});
-
 const express = require('express');
 const { getConnection } = require('./db/oracle');
 
@@ -23,6 +19,11 @@ async function getEntregasOracle(numcar) {
     const result = await conn.execute(
       `
       SELECT 
+        (SELECT COUNT(F.LANCAMENTO) 
+ FROM FMCREDITOS F 
+ WHERE F.CODCLI = C.CODCLI 
+ AND F.STATUS = 'P' 
+ AND F.NUMCARENV = 0) AS CREDITOS
         C.MUNICENT,
         NVL(C.BAIRROENT, C.BAIRROCOB),
         MIN(W.NUMSEQENTREGA),
