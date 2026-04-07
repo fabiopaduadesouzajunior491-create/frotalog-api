@@ -1,10 +1,9 @@
 const oracledb = require('oracledb');
-
 const express = require('express');
 const { getConnection } = require('./db/oracle');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // ================= TESTE API =================
 app.get('/', (req, res) => {
@@ -20,24 +19,24 @@ async function getEntregasOracle(numcar) {
       `
       SELECT 
         (SELECT COUNT(F.LANCAMENTO) 
- FROM FMCREDITOS F 
- WHERE F.CODCLI = C.CODCLI 
- AND F.STATUS = 'P' 
- AND F.NUMCARENV = 0) AS CREDITOS
+         FROM FMCREDITOS F 
+         WHERE F.CODCLI = C.CODCLI 
+         AND F.STATUS = 'P' 
+         AND F.NUMCARENV = 0) AS CREDITOS,
         C.MUNICENT,
-        NVL(C.BAIRROENT, C.BAIRROCOB),
-        MIN(W.NUMSEQENTREGA),
+        NVL(C.BAIRROENT, C.BAIRROCOB) AS BAIRRO,
+        MIN(W.NUMSEQENTREGA) AS SEQ,
         C.CODCLI,
-        MAX(C.CLIENTE),
-        SUM(W.QT),
-        SUM(W.QT * A.PESOBRUTO),
-        SUM(W.QT * A.VOLUME)
+        MAX(C.CLIENTE) AS CLIENTE,
+        SUM(W.QT) AS QTDE,
+        SUM(W.QT * A.PESOBRUTO) AS PESO,
+        SUM(W.QT * A.VOLUME) AS VOLUME
       FROM PCPEDC P
       JOIN PCCLIENT C ON C.CODCLI = P.CODCLI
       JOIN PCMOVENDPEND W ON W.NUMPED = P.NUMPED
       JOIN PCPRODUT A ON A.CODPROD = W.CODPROD
-      WHERE P.NUMCAR = TO_NUMBER(:NUMCAR)
-        AND W.NUMCAR = TO_NUMBER(:NUMCAR)
+      WHERE P.NUMCAR = :NUMCAR
+        AND W.NUMCAR = :NUMCAR
         AND W.DTESTORNO IS NULL
         AND P.DTCANCEL IS NULL
       GROUP BY
@@ -46,7 +45,7 @@ async function getEntregasOracle(numcar) {
         C.CODCLI
       ORDER BY MIN(W.NUMSEQENTREGA)
       `,
-      { NUMCAR: numcar }
+      { NUMCAR: Number(numcar) }
     );
 
     await conn.close();
@@ -60,14 +59,15 @@ async function getEntregasOracle(numcar) {
     };
 
     result.rows.forEach(e => {
-      const cidade = e[0];
-      const bairro = e[1];
-      const seq = e[2];
-      const codcli = e[3];
-      const cliente = e[4];
-      const itens = e[5];
-      const peso = e[6];
-      const volume = e[7];
+      const creditos = e[0];
+      const cidade = e[1];
+      const bairro = e[2];
+      const seq = e[3];
+      const codcli = e[4];
+      const cliente = e[5];
+      const itens = e[6];
+      const peso = e[7];
+      const volume = e[8];
 
       if (!cidades[cidade]) {
         cidades[cidade] = {
@@ -84,7 +84,8 @@ async function getEntregasOracle(numcar) {
         bairro,
         itens,
         peso,
-        volume
+        volume,
+        creditos
       });
 
       cidades[cidade].totais.entregas += 1;
@@ -109,7 +110,7 @@ async function getEntregasOracle(numcar) {
   }
 }
 
-// ================= ROMANEIO (FINAL IGUAL RENDER) =================
+// ================= ROMANEIO =================
 app.get('/cargas/:numcar/romaneio-view', async (req, res) => {
   const numcar = req.params.numcar;
 
@@ -137,8 +138,11 @@ app.get('/cargas/:numcar/romaneio-view', async (req, res) => {
     c.entregas.sort((a, b) => a.seq - b.seq);
 
     c.entregas.forEach(e => {
+
+      const cor = e.creditos > 0 ? 'red' : 'black';
+
       html += `
-      <div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid #ddd;">
+      <div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid #ddd;color:${cor};">
         <div style="width:40%;">
           ${e.codcli} - ${e.cliente}
         </div>
