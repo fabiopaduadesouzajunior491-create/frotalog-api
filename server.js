@@ -1,297 +1,179 @@
+const oracledb = require('oracledb');
+
+oracledb.initOracleClient({
+  libDir: 'C:\\oracle_client\\instantclient_19_30'
+});
+
 const express = require('express');
+const { getConnection } = require('./db/oracle');
 
 const app = express();
+const PORT = 3000;
 
+// ================= TESTE API =================
 app.get('/', (req, res) => {
   res.json({ message: 'API FROTALOG OK' });
 });
 
-// ================= DADOS BASE (SIMULA SELECT) =================
-function getEntregas() {
-  return [
-    {
-      codcli: 10500,
-      cliente: "DECIO COMERCIO",
-      bairro: "ZONA RURAL",
-      cidade: "MONTE CARMELO",
-      seq: 1,
-      pallets: 12,
-      itens: 30,
-      peso: 91.090,
-      volume: 0.122,
-      creditos: 0,
-      lat: -18.724,
-      lng: -47.491
-    },
-    {
-      codcli: 10198,
-      cliente: "MINIMERCADO ORNELAS",
-      bairro: "PARQUE SAO JORGE",
-      cidade: "MONTE CARMELO",
-      seq: 2,
-      pallets: 5,
-      itens: 2,
-      peso: 5.200,
-      volume: 0.123,
-      creditos: 2,
-      lat: -18.720,
-      lng: -47.480
-    }
-  ];
+// ================= ORACLE =================
+async function getEntregasOracle(numcar) {
+  try {
+    const conn = await getConnection();
+
+    const result = await conn.execute(
+      `
+      SELECT 
+        C.MUNICENT,
+        NVL(C.BAIRROENT, C.BAIRROCOB),
+        MIN(W.NUMSEQENTREGA),
+        C.CODCLI,
+        MAX(C.CLIENTE),
+        SUM(W.QT),
+        SUM(W.QT * A.PESOBRUTO),
+        SUM(W.QT * A.VOLUME)
+      FROM PCPEDC P
+      JOIN PCCLIENT C ON C.CODCLI = P.CODCLI
+      JOIN PCMOVENDPEND W ON W.NUMPED = P.NUMPED
+      JOIN PCPRODUT A ON A.CODPROD = W.CODPROD
+      WHERE P.NUMCAR = TO_NUMBER(:NUMCAR)
+        AND W.NUMCAR = TO_NUMBER(:NUMCAR)
+        AND W.DTESTORNO IS NULL
+        AND P.DTCANCEL IS NULL
+      GROUP BY
+        C.MUNICENT,
+        NVL(C.BAIRROENT, C.BAIRROCOB),
+        C.CODCLI
+      ORDER BY MIN(W.NUMSEQENTREGA)
+      `,
+      { NUMCAR: numcar }
+    );
+
+    await conn.close();
+
+    const cidades = {};
+    const totalGeral = {
+      entregas: 0,
+      itens: 0,
+      peso: 0,
+      volume: 0
+    };
+
+    result.rows.forEach(e => {
+      const cidade = e[0];
+      const bairro = e[1];
+      const seq = e[2];
+      const codcli = e[3];
+      const cliente = e[4];
+      const itens = e[5];
+      const peso = e[6];
+      const volume = e[7];
+
+      if (!cidades[cidade]) {
+        cidades[cidade] = {
+          cidade,
+          entregas: [],
+          totais: { entregas: 0, itens: 0, peso: 0, volume: 0 }
+        };
+      }
+
+      cidades[cidade].entregas.push({
+        seq,
+        codcli,
+        cliente,
+        bairro,
+        itens,
+        peso,
+        volume
+      });
+
+      cidades[cidade].totais.entregas += 1;
+      cidades[cidade].totais.itens += itens;
+      cidades[cidade].totais.peso += peso;
+      cidades[cidade].totais.volume += volume;
+
+      totalGeral.entregas += 1;
+      totalGeral.itens += itens;
+      totalGeral.peso += peso;
+      totalGeral.volume += volume;
+    });
+
+    return {
+      cidades: Object.values(cidades),
+      totalGeral
+    };
+
+  } catch (err) {
+    console.error("Erro Oracle:", err);
+    return { cidades: [], totalGeral: { entregas: 0, itens: 0, peso: 0, volume: 0 } };
+  }
 }
 
-// ================= CARGAS =================
-app.get('/cargas', (req, res) => {
-  res.json([
-    {
-      numcar: 12345,
-      tipo: "TRANSBORDO",
-      motorista_entrega: { external_id: 101, nome: "JOAO" },
-      motorista_transbordo: { external_id: 202, nome: "CARLOS" },
-      veiculo_principal: "ABC-1234",
-      julietas: ["DEF-5678", "GHI-9999"]
-    }
-  ]);
-});
-
-// ================= ROMANEIO =================
-app.get('/cargas/:numcar/romaneio-view', (req, res) => {
+// ================= ROMANEIO (FINAL IGUAL RENDER) =================
+app.get('/cargas/:numcar/romaneio-view', async (req, res) => {
   const numcar = req.params.numcar;
 
-  const placa = "QNU5479";
-  const motorista = "LEONILDO";
-  const ajudante1 = "2017-TERCEIROS1";
-  const ajudante2 = "553-NATANAEL";
-  const data = "06/04/2026";
-  const box = "20";
-
-  let entregas = getEntregas();
-
-  // ORDEM CORRETA
-  entregas.sort((a, b) => a.seq - b.seq);
-
-  // TOTAIS
-  let totalItens = 0;
-  let totalPeso = 0;
-  let totalVolume = 0;
-
-  entregas.forEach(e => {
-    totalItens += e.itens;
-    totalPeso += e.peso;
-    totalVolume += e.volume;
-  });
+  const data = await getEntregasOracle(numcar);
 
   let html = `
   <html>
-  <head>
-    <style>
-      body { font-family: Arial; margin:0; background:#f4f6f9; }
-
-      .header {
-  background:#3A209D;
-  color:white;
-  padding:15px;
-  padding-right:120px; /* 🔥 espaço pra logo */
-  position:relative;
-}
-
-      .data {
-        font-size:11px;
-        position:absolute;
-        top:5px;
-        left:10px;
-      }
-
-      .titulo {
-        text-align:center;
-        font-size:22px;
-        font-weight:bold;
-      }
-
-      .linha-topo {
-        display:grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        align-items:center;
-        margin-top:5px;
-      }
-
-      .carga {
-        font-size:18px;
-        font-weight:bold;
-        text-align:left;
-      }
-
-      .placa {
-        text-align:center;
-        font-size:14px;
-      }
-
-      .box {
-        text-align:right;
-        font-size:14px;
-      }
-
-      .motoristas {
-        margin-top:10px;
-        display:flex;
-        gap:20px;
-        font-size:13px;
-      }
-
-      .logo {
-  position:absolute;
-  right:10px;
-  top:10px;
-  height:90px;
-}
-
-      .container { padding:10px; }
-
-      .cidade {
-        background:black;
-        color:white;
-        padding:5px;
-        margin-top:10px;
-        font-weight:bold;
-      }
-
-      .linha {
-        background:white;
-        border-radius:6px;
-        padding:10px;
-        margin-bottom:6px;
-        display:grid;
-        grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
-        font-size:12px;
-      }
-
-      .text-left { text-align:left; }
-      .text-center { text-align:center; }
-
-      .red { color:red; font-weight:bold; }
-
-      .total {
-        background:white;
-        padding:10px;
-        margin-top:10px;
-        font-weight:bold;
-        border-top:2px solid #000;
-        text-align:right;
-      }
-.linha-motoristas {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:10px;
-  font-size:13px;
-}
-
-.lado-esquerdo {
-  display:flex;
-  gap:20px;
-}
-
-.box-linha {
-  font-weight:bold;
-}
-    </style>
-  </head>
-
-  <body>
-
-    <div class="header">
-
-      <div class="data">Data: ${data}</div>
-
-      <div class="titulo">
-        ROTEIRO DE ENTREGAS DO CARREGAMENTO
-      </div>
-
-      <div class="linha-topo">
-  <div class="carga">Carga: ${numcar}</div>
-  <div class="placa">Placa: ${placa}</div>
-  <div></div> <!-- vazio pra manter alinhamento -->
-</div>
-
-    <div class="linha-motoristas">
-  <div class="lado-esquerdo">
-    <span>Motorista: ${motorista || 'NÃO DEFINIDO'}</span>
-    <span>Ajudante 1: ${ajudante1}</span>
-    <span>Ajudante 2: ${ajudante2}</span>
-  </div>
-
-  <div class="box-linha">
-    BOX: ${box}
-  </div>
-</div>
-
-      <img class="logo" src="https://raw.githubusercontent.com/fabiopaduadesouzajunior491-create/Foto-LogoFmartins/254a5c44e3b1060d1953d4d7215012af1b015942/caminh%C3%A3o.png">
-
+  <body style="font-family: Arial; margin:0;">
+  
+  <div style="background:#4b2ca3;color:white;padding:10px;">
+    <div><b>Carga: ${numcar}</b></div>
+    <div style="text-align:center;font-size:20px;">
+      <b>ROTEIRO DE ENTREGAS DO CARREGAMENTO</b>
     </div>
-
-    <div class="container">
+  </div>
   `;
 
-  let ultimaCidade = "";
+  data.cidades.forEach(c => {
+    html += `
+    <div style="background:black;color:white;padding:6px;margin-top:10px;">
+      <b>${c.cidade}</b>
+    </div>
+    `;
 
-  entregas.forEach(e => {
+    c.entregas.sort((a, b) => a.seq - b.seq);
 
-    if (e.cidade !== ultimaCidade) {
-      html += `<div class="cidade">${e.cidade}</div>`;
-      ultimaCidade = e.cidade;
-    }
+    c.entregas.forEach(e => {
+      html += `
+      <div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid #ddd;">
+        <div style="width:40%;">
+          ${e.codcli} - ${e.cliente}
+        </div>
+        <div style="width:20%;">${e.bairro}</div>
+        <div style="width:10%;text-align:center;">${e.itens}</div>
+        <div style="width:15%;text-align:right;">${e.peso.toFixed(2)}</div>
+        <div style="width:15%;text-align:right;">${e.volume.toFixed(3)}</div>
+      </div>
+      `;
+    });
 
     html += `
-      <div class="linha ${e.creditos > 0 ? 'red' : ''}">
-        <div class="text-left">${e.codcli} - ${e.cliente}</div>
-        <div class="text-left">${e.bairro}</div>
-        <div class="text-center">${e.pallets}</div>
-        <div class="text-center">${e.itens}</div>
-        <div class="text-center">${e.peso.toFixed(3)}</div>
-        <div class="text-center">${e.volume.toFixed(3)}</div>
-      </div>
+    <div style="text-align:right;font-weight:bold;padding:6px;background:#eee;">
+      TOTAL: ${c.totais.entregas} entregas | 
+      ${c.totais.itens} itens | 
+      ${c.totais.peso.toFixed(2)} kg | 
+      ${c.totais.volume.toFixed(3)} m³
+    </div>
     `;
   });
 
   html += `
-    <div class="total">
-      TOTAL: ${entregas.length} entregas | 
-      ${totalItens} itens | 
-      ${totalPeso.toFixed(2)} kg | 
-      ${totalVolume.toFixed(3)} m³
-    </div>
+  <div style="text-align:right;font-weight:bold;padding:10px;font-size:18px;">
+    TOTAL GERAL: ${data.totalGeral.entregas} entregas | 
+    ${data.totalGeral.itens} itens | 
+    ${data.totalGeral.peso.toFixed(2)} kg | 
+    ${data.totalGeral.volume.toFixed(3)} m³
+  </div>
   `;
 
-  html += `
-    </div>
-  </body>
-  </html>
-  `;
+  html += `</body></html>`;
 
   res.send(html);
 });
-// ================= ENTREGAS (APP) =================
-app.get('/entregas', (req, res) => {
-  const entregas = getEntregas();
-
-  res.json(entregas);
-});
-
-// ================= TRANSBORDOS =================
-app.get('/transbordos', (req, res) => {
-  res.json([
-    {
-      numcar: 12345,
-      cidade_origem: "UBERLANDIA",
-      cidade_destino: "ARAGUARI",
-      motorista_transbordo: { nome: "CARLOS" },
-      motorista_entrega: { nome: "JOAO" },
-      cavalo: "ABC-1234"
-    }
-  ]);
-});
 
 // ================= SERVIDOR =================
-app.listen(process.env.PORT || 3000, () => {
-  console.log('Servidor rodando');
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
