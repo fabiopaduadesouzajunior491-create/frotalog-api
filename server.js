@@ -208,7 +208,7 @@ app.get('/cargas/:numcar/romaneio-view', async (req, res) => {
       <div class="data">Data: ${data}</div>
 
       <div class="titulo">
-        ROTEIRO DE ENTREGAS DO CARREGAMENTO
+        FABIO JUNIOR GOSTOSO
       </div>
 
       <div class="linha-topo">
