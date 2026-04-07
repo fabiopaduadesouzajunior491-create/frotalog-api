@@ -17,51 +17,27 @@ async function getEntregasOracle(numcar) {
 
     const result = await conn.execute(
       `
-      SELECT 
-        MIN(W.NUMSEQENTREGA) AS SEQ,
-        C.CODCLI,
-        MAX(C.CLIENTE) AS CLIENTE,
-        NVL(C.BAIRROENT, C.BAIRROCOB) AS BAIRRO,
-        C.MUNICENT,
-        COUNT(DISTINCT W.NUMPALETE) AS PALLETS,
-        SUM(W.QT) AS ITENS,
-        SUM(W.QT * A.PESOBRUTO) AS PESO,
-        SUM(W.QT * A.VOLUME) AS VOLUME,
-        (SELECT COUNT(F.LANCAMENTO)
-         FROM FMCREDITOS F
-         WHERE F.CODCLI = C.CODCLI
-         AND F.STATUS = 'P'
-         AND F.NUMCARENV = 0) AS CREDITOS
-      FROM PCPEDC P
-      JOIN PCCLIENT C ON C.CODCLI = P.CODCLI
-      JOIN PCMOVENDPEND W ON W.NUMPED = P.NUMPED
-      JOIN PCPRODUT A ON A.CODPROD = W.CODPROD
-      WHERE P.NUMCAR = :NUMCAR
-        AND W.NUMCAR = :NUMCAR
-        AND W.DTESTORNO IS NULL
-        AND P.DTCANCEL IS NULL
-      GROUP BY
-        C.CODCLI,
-        NVL(C.BAIRROENT, C.BAIRROCOB),
-        C.MUNICENT
-      ORDER BY MIN(W.NUMSEQENTREGA)
-      `,
+     SELECT 
+  C.CODCLI,
+  C.CLIENTE
+FROM PCCLIENT C
+WHERE ROWNUM <= 10,
       { NUMCAR: Number(numcar) }
     );
 
     await conn.close();
 
     return result.rows.map(e => ({
-      seq: e[0],
-      codcli: e[1],
-      cliente: e[2],
-      bairro: e[3],
-      cidade: e[4],
-      pallets: e[5] || 0,
-      itens: e[6] || 0,
-      peso: e[7] || 0,
-      volume: e[8] || 0,
-      creditos: e[9] || 0
+  seq: 1,
+  codcli: e[0],
+  cliente: e[1],
+  bairro: "TESTE",
+  cidade: "TESTE",
+  pallets: 0,
+  itens: 0,
+  peso: 0,
+  volume: 0,
+  creditos: 0
     }));
 
   } catch (err) {
@@ -208,7 +184,7 @@ app.get('/cargas/:numcar/romaneio-view', async (req, res) => {
       <div class="data">Data: ${data}</div>
 
       <div class="titulo">
-        FABIO JUNIOR GOSTOSO
+        ROTEIRO DE ENTREGAS DO CARREGAMENTO
       </div>
 
       <div class="linha-topo">
